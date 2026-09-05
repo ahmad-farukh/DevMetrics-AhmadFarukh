@@ -4,133 +4,123 @@ import {
   setSearchQuery,
   setStatusFilter,
   deleteAuditItem,
-  setEditingAuditItem
+  setEditingAuditItem,
 } from '../features/monitorSlice';
-import { Trash2, Edit, Search } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-export default function AuditHistoryTable() {
+const AuditHistoryTable = () => {
   const dispatch = useDispatch();
-  const auditHistory = useSelector((state) => state.monitor.auditHistory);
-  const searchQuery = useSelector((state) => state.monitor.searchQuery);
-  const statusFilter = useSelector((state) => state.monitor.statusFilter);
+  const { audits = [], searchQuery = '', statusFilter = 'ALL' } = useSelector(
+    (state) => state.monitor || {}
+  );
 
-  // Filter Logic with IF / ELSE
-  const filteredData = auditHistory.filter((item) => {
-    let matchesSearch = false;
-    if (item.url.toLowerCase().includes(searchQuery.toLowerCase()) === true) {
-      matchesSearch = true;
-    }
+  // Safe Filtering Logic (Prevents Cannot read properties of undefined reading 'status')
+  const filteredAudits = (audits || []).filter((item) => {
+    if (!item) return false;
 
-    let matchesStatus = false;
-    if (statusFilter === 'ALL') {
-      matchesStatus = true;
-    } else if (statusFilter === item.status) {
-      matchesStatus = true;
-    }
+    const itemStatus = item?.status ? String(item.status).toUpperCase() : '';
+    const itemUrl = item?.url ? String(item.url).toLowerCase() : '';
+    const query = (searchQuery || '').toLowerCase();
 
-    if (matchesSearch === true && matchesStatus === true) {
-      return true;
-    } else {
-      return false;
-    }
+    const matchesStatus =
+      statusFilter === 'ALL' || itemStatus === statusFilter.toUpperCase();
+
+    const matchesSearch = itemUrl.includes(query) || itemStatus.includes(query);
+
+    return matchesStatus && matchesSearch;
   });
 
   return (
-    <div className="bg-black border border-zinc-800 p-6 rounded-lg space-y-6">
-      
+    <div className="w-full bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 mt-6">
       {/* Controls Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-lg font-bold text-white">Audit History & Latency Trends</h2>
-          <p className="text-xs text-zinc-400 font-mono">Manage and edit tracked endpoints</p>
-        </div>
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
+        <input
+          type="text"
+          placeholder="Search by URL or Status..."
+          value={searchQuery}
+          onChange={(e) => dispatch(setSearchQuery(e.target.value))}
+          className="w-full sm:w-1/2 px-4 py-2 border rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none"
+        />
 
-        <div className="flex flex-wrap gap-3 w-full sm:w-auto">
-          <div className="relative flex-1 sm:flex-initial">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
-            <input
-              type="text"
-              placeholder="Search URL..."
-              value={searchQuery}
-              onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-              className="bg-black border border-zinc-800 text-white rounded px-3 py-1.5 pl-9 text-xs focus:outline-none focus:border-red-600 font-mono w-full"
-            />
-          </div>
-
-          <select
-            value={statusFilter}
-            onChange={(e) => dispatch(setStatusFilter(e.target.value))}
-            className="bg-black border border-zinc-800 text-white rounded px-3 py-1.5 text-xs focus:outline-none focus:border-red-600 font-mono"
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="ONLINE">ONLINE</option>
-            <option value="OFFLINE">OFFLINE</option>
-          </select>
-        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => dispatch(setStatusFilter(e.target.value))}
+          className="w-full sm:w-1/4 px-4 py-2 border rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none"
+        >
+          <option value="ALL">All Statuses</option>
+          <option value="SUCCESS">Success</option>
+          <option value="ERROR">Error</option>
+          <option value="FAILED">Failed</option>
+        </select>
       </div>
 
-      {/* Latency Recharts Graph */}
-      {auditHistory.length > 0 && (
-        <div className="h-44 w-full bg-zinc-950 border border-zinc-900 rounded p-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={auditHistory}>
-              <XAxis dataKey="url" stroke="#52525b" fontSize={10} />
-              <YAxis stroke="#52525b" fontSize={10} />
-              <Tooltip contentStyle={{ backgroundColor: '#000000', borderColor: '#27272a', color: '#ffffff' }} />
-              <Line type="monotone" dataKey="responseTimeMs" stroke="#dc2626" strokeWidth={2} dot={{ fill: '#dc2626' }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
-      {/* CRUD History Table */}
+      {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left font-mono text-xs">
+        <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-zinc-800 text-zinc-400 uppercase">
-              <th className="py-3 px-3">Endpoint URL</th>
-              <th className="py-3 px-3">Status</th>
-              <th className="py-3 px-3">Latency</th>
-              <th className="py-3 px-3">Security</th>
-              <th className="py-3 px-3">Speed</th>
-              <th className="py-3 px-3 text-right">Actions</th>
+            <tr className="border-b dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+              <th className="p-3">URL</th>
+              <th className="p-3">Status</th>
+              <th className="p-3">Response Time</th>
+              <th className="p-3">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-900">
-            {filteredData.map((row) => (
-              <tr key={row.id} className="hover:bg-zinc-950/50">
-                <td className="py-3 px-3 text-white font-semibold">{row.url}</td>
-                <td className="py-3 px-3">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.status === 'ONLINE' ? 'bg-zinc-900 text-white border border-zinc-800' : 'bg-red-950 text-red-500 border border-red-800'}`}>
-                    {row.status}
-                  </span>
-                </td>
-                <td className="py-3 px-3 text-zinc-300">{row.responseTimeMs} ms</td>
-                <td className="py-3 px-3 text-zinc-300">{row.securityScore} / 100</td>
-                <td className="py-3 px-3 text-zinc-300">{row.speedScore} / 100</td>
-                <td className="py-3 px-3 text-right space-x-2">
-                  <button
-                    onClick={() => dispatch(setEditingAuditItem(row))}
-                    className="p-1 text-zinc-400 hover:text-white transition-colors"
-                    title="Edit Record"
+          <tbody>
+            {filteredAudits.length > 0 ? (
+              filteredAudits.map((item, index) => {
+                const status = item?.status || 'UNKNOWN';
+                const isSuccess = status.toUpperCase() === 'SUCCESS' || status === '200';
+
+                return (
+                  <tr
+                    key={item?.id || index}
+                    className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                   >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => dispatch(deleteAuditItem(row.id))}
-                    className="p-1 text-zinc-400 hover:text-red-600 transition-colors"
-                    title="Delete Record"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                    <td className="p-3 font-mono text-sm dark:text-gray-200">
+                      {item?.url || 'N/A'}
+                    </td>
+                    <td className="p-3">
+                      <span
+                        className={`px-2 py-1 text-xs font-semibold rounded ${
+                          isSuccess
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        }`}
+                      >
+                        {status}
+                      </span>
+                    </td>
+                    <td className="p-3 text-sm dark:text-gray-300">
+                      {item?.responseTime ? `${item.responseTime} ms` : 'N/A'}
+                    </td>
+                    <td className="p-3 flex gap-2">
+                      <button
+                        onClick={() => dispatch(setEditingAuditItem(item))}
+                        className="px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => dispatch(deleteAuditItem(item?.id))}
+                        className="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="4" className="text-center p-4 text-gray-500 dark:text-gray-400">
+                  No audit logs found.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
-
     </div>
   );
-}
+};
+
+export default AuditHistoryTable;

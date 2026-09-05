@@ -26,7 +26,7 @@ export const runAuditThunk = createAsyncThunk(
 );
 
 const initialState = {
-  audits: [], // Hamesha empty array se start hoga
+  audits: [],
   searchQuery: '',
   statusFilter: 'ALL',
   editingAuditItem: null,
@@ -45,19 +45,16 @@ const monitorSlice = createSlice({
       state.statusFilter = action.payload || 'ALL';
     },
     deleteAuditItem: (state, action) => {
-      if (Array.isArray(state.audits)) {
-        state.audits = state.audits.filter((item) => item?.id !== action.payload);
-      }
+      state.audits = state.audits.filter((item) => item && item.id !== action.payload);
     },
     setEditingAuditItem: (state, action) => {
-      state.editingAuditItem = action.payload || null;
+      state.editingAuditItem = action.payload;
     },
     updateAuditItem: (state, action) => {
-      if (Array.isArray(state.audits) && action.payload?.id) {
-        const index = state.audits.findIndex((item) => item?.id === action.payload.id);
-        if (index !== -1) {
-          state.audits[index] = { ...state.audits[index], ...action.payload };
-        }
+      if (!action.payload || !action.payload.id) return;
+      const index = state.audits.findIndex((item) => item && item.id === action.payload.id);
+      if (index !== -1) {
+        state.audits[index] = { ...state.audits[index], ...action.payload };
       }
     },
   },
@@ -69,11 +66,17 @@ const monitorSlice = createSlice({
       })
       .addCase(runAuditThunk.fulfilled, (state, action) => {
         state.loading = false;
-        if (!Array.isArray(state.audits)) {
-          state.audits = [];
-        }
-        if (action.payload) {
-          state.audits.unshift(action.payload);
+        // Safety check to ensure action.payload is valid
+        if (action.payload && typeof action.payload === 'object') {
+          const auditData = {
+            id: action.payload.id || Date.now(),
+            url: action.payload.url || 'N/A',
+            status: action.payload.status || 'SUCCESS',
+            responseTime: action.payload.responseTime || action.payload.duration || 0,
+            timestamp: action.payload.timestamp || new Date().toISOString(),
+            ...action.payload,
+          };
+          state.audits.unshift(auditData);
         }
       })
       .addCase(runAuditThunk.rejected, (state, action) => {
