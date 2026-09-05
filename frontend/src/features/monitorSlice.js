@@ -26,7 +26,7 @@ export const runAuditThunk = createAsyncThunk(
 );
 
 const initialState = {
-  audits: [],
+  audits: [], // Hamesha empty array se start hoga
   searchQuery: '',
   statusFilter: 'ALL',
   editingAuditItem: null,
@@ -39,21 +39,25 @@ const monitorSlice = createSlice({
   initialState,
   reducers: {
     setSearchQuery: (state, action) => {
-      state.searchQuery = action.payload;
+      state.searchQuery = action.payload || '';
     },
     setStatusFilter: (state, action) => {
-      state.statusFilter = action.payload;
+      state.statusFilter = action.payload || 'ALL';
     },
     deleteAuditItem: (state, action) => {
-      state.audits = state.audits.filter((item) => item.id !== action.payload);
+      if (Array.isArray(state.audits)) {
+        state.audits = state.audits.filter((item) => item?.id !== action.payload);
+      }
     },
     setEditingAuditItem: (state, action) => {
-      state.editingAuditItem = action.payload;
+      state.editingAuditItem = action.payload || null;
     },
     updateAuditItem: (state, action) => {
-      const index = state.audits.findIndex((item) => item.id === action.payload.id);
-      if (index !== -1) {
-        state.audits[index] = { ...state.audits[index], ...action.payload };
+      if (Array.isArray(state.audits) && action.payload?.id) {
+        const index = state.audits.findIndex((item) => item?.id === action.payload.id);
+        if (index !== -1) {
+          state.audits[index] = { ...state.audits[index], ...action.payload };
+        }
       }
     },
   },
@@ -65,6 +69,9 @@ const monitorSlice = createSlice({
       })
       .addCase(runAuditThunk.fulfilled, (state, action) => {
         state.loading = false;
+        if (!Array.isArray(state.audits)) {
+          state.audits = [];
+        }
         if (action.payload) {
           state.audits.unshift(action.payload);
         }
@@ -76,7 +83,6 @@ const monitorSlice = createSlice({
   },
 });
 
-// Export all required actions
 export const {
   setSearchQuery,
   setStatusFilter,
@@ -85,5 +91,4 @@ export const {
   updateAuditItem,
 } = monitorSlice.actions;
 
-// Default export for store.js
 export default monitorSlice.reducer;
