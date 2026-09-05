@@ -45,14 +45,18 @@ const monitorSlice = createSlice({
       state.statusFilter = action.payload || 'ALL';
     },
     deleteAuditItem: (state, action) => {
-      state.audits = state.audits.filter((item) => item && item.id !== action.payload);
+      state.audits = (state.audits || []).filter(
+        (item) => item && item.id !== action.payload
+      );
     },
     setEditingAuditItem: (state, action) => {
       state.editingAuditItem = action.payload;
     },
     updateAuditItem: (state, action) => {
       if (!action.payload || !action.payload.id) return;
-      const index = state.audits.findIndex((item) => item && item.id === action.payload.id);
+      const index = (state.audits || []).findIndex(
+        (item) => item && item.id === action.payload.id
+      );
       if (index !== -1) {
         state.audits[index] = { ...state.audits[index], ...action.payload };
       }
@@ -66,18 +70,21 @@ const monitorSlice = createSlice({
       })
       .addCase(runAuditThunk.fulfilled, (state, action) => {
         state.loading = false;
-        // Safety check to ensure action.payload is valid
-        if (action.payload && typeof action.payload === 'object') {
-          const auditData = {
-            id: action.payload.id || Date.now(),
-            url: action.payload.url || 'N/A',
-            status: action.payload.status || 'SUCCESS',
-            responseTime: action.payload.responseTime || action.payload.duration || 0,
-            timestamp: action.payload.timestamp || new Date().toISOString(),
-            ...action.payload,
-          };
-          state.audits.unshift(auditData);
+        
+        // Bulletproof response handler
+        const payload = action.payload || {};
+        const safeAudit = {
+          id: payload.id || Date.now(),
+          url: payload.url || 'N/A',
+          status: payload.status || (payload.statusCode ? String(payload.statusCode) : 'SUCCESS'),
+          responseTime: payload.responseTime || payload.duration || payload.time || 0,
+          timestamp: payload.timestamp || new Date().toISOString(),
+        };
+
+        if (!Array.isArray(state.audits)) {
+          state.audits = [];
         }
+        state.audits.unshift(safeAudit);
       })
       .addCase(runAuditThunk.rejected, (state, action) => {
         state.loading = false;

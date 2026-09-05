@@ -1,28 +1,17 @@
 import React from 'react';
-import Header from './components/Header';
-import AuditForm from './components/AuditForm';
-import MetricsCards from './components/MetricsCards';
-import TechStackPanel from './components/TechStackPanel';
-import DesignSpecsPanel from './components/DesignSpecsPanel';
-import RecommendationsPanel from './components/RecommendationsPanel';
 import AuditHistoryTable from './components/AuditHistoryTable';
-import EditModal from './components/EditModal';
 
-export default function App() {
+function App() {
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-red-600 selection:text-white pb-16">
-      <Header />
-      
-      <main className="max-w-7xl mx-auto px-6">
-        <AuditForm />
-        <MetricsCards />
-        <TechStackPanel />
-        <DesignSpecsPanel />
-        <RecommendationsPanel />
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white p-6">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-6">DevMetrics Audit Dashboard</h1>
+        
+        {/* Main Audit Components */}
         <AuditHistoryTable />
-      </main>
-
-      <EditModal />
+      </div>
     </div>
   );
 }
+
+export default App;
