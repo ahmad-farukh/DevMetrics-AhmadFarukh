@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Layers, Cpu, Wrench, Network } from 'lucide-react';
+import { Layers, Cpu, Wrench, Network, Code } from 'lucide-react';
 
 export default function TechStackPanel() {
   const currentAudit = useSelector((state) => state.monitor.currentAudit);
@@ -14,7 +14,7 @@ export default function TechStackPanel() {
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
-        {/* Frontend Tech */}
+        {/* Frontend Frameworks */}
         <div className="bg-zinc-950 border border-zinc-900 p-4 rounded">
           <p className="text-zinc-500 font-bold mb-2 flex items-center gap-1.5">
             <Cpu className="w-4 h-4 text-white" /> FRONTEND FRAMEWORKS
@@ -38,7 +38,7 @@ export default function TechStackPanel() {
           </ul>
         </div>
 
-        {/* Third Party Tools */}
+        {/* Third Party Services */}
         <div className="bg-zinc-950 border border-zinc-900 p-4 rounded">
           <p className="text-zinc-500 font-bold mb-2 flex items-center gap-1.5">
             <Wrench className="w-4 h-4 text-white" /> THIRD-PARTY SERVICES
@@ -52,10 +52,12 @@ export default function TechStackPanel() {
 
         {/* APIs & Endpoints */}
         <div className="bg-zinc-950 border border-zinc-900 p-4 rounded">
-          <p className="text-zinc-500 font-bold mb-2">APIS & ENDPOINTS</p>
-          <ul className="space-y-1">
+          <p className="text-zinc-500 font-bold mb-2 flex items-center gap-1.5">
+            <Code className="w-4 h-4 text-white" /> DETECTED APIS
+          </p>
+          <ul className="space-y-1 truncate">
             {currentAudit.apisDetected?.map((item, idx) => (
-              <li key={idx} className="text-zinc-400 break-all">• {item}</li>
+              <li key={idx} className="text-zinc-300 truncate" title={item}>• {item}</li>
             ))}
           </ul>
         </div>

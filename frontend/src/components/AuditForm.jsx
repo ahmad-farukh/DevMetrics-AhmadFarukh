@@ -38,12 +38,12 @@ export default function AuditForm() {
           disabled={loading}
           className="bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors text-sm disabled:opacity-50"
         >
-          {loading ? 'Analyzing...' : 'Run Audit'}
+          {loading ? 'AUDITING...' : 'RUN AUDIT'}
         </button>
       </form>
 
-      {errorMessage !== '' && (
-        <div className="mt-3 bg-red-950/40 border border-red-800 text-red-400 text-sm p-3 rounded-lg">
+      {errorMessage && (
+        <div className="p-3 bg-red-950/80 border border-red-800 text-red-400 rounded text-xs font-mono">
           {errorMessage}
         </div>
       )}

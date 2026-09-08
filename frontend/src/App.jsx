@@ -1,32 +1,28 @@
 import React from 'react';
 import Header from './components/Header';
-import MetricsOverview from './components/MetricsOverview';
-import AuditInputForm from './components/AuditInputForm';
+import AuditForm from './components/AuditForm';
+import MetricsCards from './components/MetricsCards';
+import TechStackPanel from './components/TechStackPanel';
+import DesignSpecsPanel from './components/DesignSpecsPanel';
+import RecommendationsPanel from './components/RecommendationsPanel';
 import AuditHistoryTable from './components/AuditHistoryTable';
 import EditModal from './components/EditModal';
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
-      {/* Top Navigation / Header */}
+    <div className="min-h-screen bg-black text-white selection:bg-red-600 selection:text-white pb-16">
       <Header />
-
-      {/* Main Content Dashboard */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Top Metric Cards */}
-        <MetricsOverview />
-
-        {/* URL Input Form Area */}
-        <AuditInputForm />
-
-        {/* Audit Logs Table */}
+      
+      <main className="max-w-7xl mx-auto px-6">
+        <AuditForm />
+        <MetricsCards />
+        <TechStackPanel />
+        <DesignSpecsPanel />
+        <RecommendationsPanel />
         <AuditHistoryTable />
       </main>
 
-      {/* Edit Modal Popup */}
       <EditModal />
     </div>
   );
 }
-
-export default App;

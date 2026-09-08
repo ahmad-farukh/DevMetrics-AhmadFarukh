@@ -11,7 +11,7 @@ export default function Header() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-white">DevMetrics</h1>
-            <p className="text-xs text-zinc-400 font-mono">Built by Ahmad Farukh</p>
+            <p className="text-2xl text-zinc-400 font-mono">Built by Ahmad Farukh</p>
           </div>
         </div>
         <div className="bg-zinc-900 border border-zinc-800 px-4 py-1.5 rounded text-xs font-mono text-zinc-300">

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { runAuditThunk, setSearchQuery, setStatusFilter } from '../features/monitorSlice';
 import { ShieldAlert, Zap, Globe, CheckCircle, AlertTriangle, Search, Server } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import DesignSystemPanel from './DesignSystemPanel';
 
 export default function AuditDashboard() {
   const [inputUrl, setInputUrl] = useState('');
@@ -26,31 +27,24 @@ export default function AuditDashboard() {
     }
   };
 
-  // Filtering Logic without Ternaries
+  // Speed Status Helper
+  const getSpeedLabel = (score) => {
+    if (score >= 85) return { label: 'FAST', color: 'text-emerald-400', bg: 'bg-emerald-950/60 border-emerald-700' };
+    if (score >= 60) return { label: 'MODERATE', color: 'text-amber-400', bg: 'bg-amber-950/60 border-amber-700' };
+    return { label: 'SLOW', color: 'text-rose-400', bg: 'bg-rose-950/60 border-rose-700' };
+  };
+
+  // Filtering Logic
   const filteredHistory = auditHistory.filter((item) => {
-    let matchesSearch = false;
-    if (item.url.toLowerCase().includes(searchQuery.toLowerCase()) === true) {
-      matchesSearch = true;
-    }
-
-    let matchesFilter = false;
-    if (statusFilter === 'ALL') {
-      matchesFilter = true;
-    } else if (statusFilter === item.status) {
-      matchesFilter = true;
-    }
-
-    if (matchesSearch === true && matchesFilter === true) {
-      return true;
-    } else {
-      return false;
-    }
+    let matchesSearch = item.url.toLowerCase().includes(searchQuery.toLowerCase());
+    let matchesFilter = statusFilter === 'ALL' || statusFilter === item.status;
+    return matchesSearch && matchesFilter;
   });
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
-        
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-800 pb-6">
           <div>
@@ -95,7 +89,7 @@ export default function AuditDashboard() {
         {/* Audit Report Grid */}
         {currentAudit !== null && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
+
             {/* Status & Latency Card */}
             <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
               <h3 className="text-slate-400 text-sm font-semibold mb-2">Service Status</h3>
@@ -135,21 +129,35 @@ export default function AuditDashboard() {
             {/* Speed Score Card */}
             <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-slate-400 text-sm font-semibold">Performance Score</h3>
+                <h3 className="text-slate-400 text-sm font-semibold">SPEED PERFORMANCE SCORE</h3>
                 <Zap className="w-5 h-5 text-amber-400" />
               </div>
               <div className="text-4xl font-extrabold text-amber-400">
                 {currentAudit.speedScore} / 100
               </div>
-              <p className="text-xs text-slate-400 mt-2">Server Latency Evaluation</p>
+
+              {/* Dynamic Label Fix (Hardcoded SLOW Text Removed) */}
+              <div className={`mt-3 inline-block px-3 py-1 rounded text-xs font-bold font-mono tracking-wider ${currentAudit.speedScore >= 85
+                  ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-700'
+                  : currentAudit.speedScore >= 60
+                    ? 'bg-amber-950/60 text-amber-400 border border-amber-700'
+                    : 'bg-rose-950/60 text-rose-400 border border-rose-700'
+                }`}>
+                {currentAudit.speedScore >= 85 ? 'FAST' : currentAudit.speedScore >= 60 ? 'MODERATE' : 'SLOW'}
+              </div>
             </div>
           </div>
+        )}
+
+        {/* Styling, Color Palette, Fonts & Animations Panel */}
+        {currentAudit !== null && (
+          <DesignSystemPanel audit={currentAudit} />
         )}
 
         {/* Actionable Recommendations Section */}
         {currentAudit !== null && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
+
             {/* Security Recommendations */}
             <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
               <h3 className="text-lg font-bold text-indigo-400 mb-4 flex items-center gap-2">
@@ -194,7 +202,7 @@ export default function AuditDashboard() {
         <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-6">
           <div className="flex flex-col md:flex-row justify-between items-md-center gap-4">
             <h2 className="text-xl font-bold text-slate-200">Audit History & Latency Trends</h2>
-            
+
             {/* Search and Filters */}
             <div className="flex gap-3">
               <div className="relative">
