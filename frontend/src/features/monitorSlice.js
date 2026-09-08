@@ -8,7 +8,7 @@ const getApiBaseUrl = () => {
   if (typeof process !== 'undefined' && process.env && process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
   }
-  return 'http://localhost:5000';
+  return 'https://dev-metrics-ahmad-farukh.vercel.app';
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -153,7 +153,4 @@ export const {
   updateAuditItem,
 } = monitorSlice.actions;
 
-
-
 export default monitorSlice.reducer;
-
