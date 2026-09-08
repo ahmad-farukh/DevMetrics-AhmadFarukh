@@ -332,8 +332,12 @@ app.post('/api/audit', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`DevMetrics Engine Running on http://localhost:${PORT}`);
-});
+// Vercel Export Integration
+module.exports = app;
 
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`DevMetrics Engine Running on http://localhost:${PORT}`);
+  });
+}
