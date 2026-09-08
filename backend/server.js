@@ -8,11 +8,16 @@ const { URL } = require('url');
 
 const app = express();
 
+// Enable CORS for all origins & credentials
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  credentials: true
 }));
+
+// Explicit Preflight Handling for Vercel Serverless environment
+app.options('*', cors());
 
 app.disable('x-powered-by');
 app.use(compression({ threshold: 1024, level: 6 }));
