@@ -2,13 +2,13 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 // Safe Browser-Compatible Environment Variable Reader
 const getApiBaseUrl = () => {
+  let url = 'https://dev-metrics-ahmad-farukh.vercel.app';
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+    url = import.meta.env.VITE_API_URL;
+  } else if (typeof process !== 'undefined' && process.env && process.env.REACT_APP_API_URL) {
+    url = process.env.REACT_APP_API_URL;
   }
-  if (typeof process !== 'undefined' && process.env && process.env.REACT_APP_API_URL) {
-    return process.env.REACT_APP_API_URL;
-  }
-  return 'https://dev-metrics-ahmad-farukh.vercel.app';
+  return url.replace(/\/+$/, ''); // Remove any trailing slash to prevent double slashes
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -16,8 +16,9 @@ const API_BASE_URL = getApiBaseUrl();
 export const runAuditThunk = createAsyncThunk(
   'monitor/runAudit',
   async (targetUrl, { rejectWithValue }) => {
+    // Timeout set to 25s for cross-device & serverless cold-start latency
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/audit`, {
